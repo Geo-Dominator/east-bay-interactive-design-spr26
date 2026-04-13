@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Project Microgame</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="gameContainer" class="game-container">
+        <!-- Title Screen -->
+        <div id="titleScreen" class="screen active">
+            <h1>MICROGAME MANIA</h1>
+            <p>Get 4 wins in a row!</p>
+            <button id="startBtn" class="btn">START</button>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="gameScreen" class="screen">
+            <div class="header">
+                <div>Wins: <span id="winCount">0</span>/4</div>
+                <div id="difficulty" class="difficulty">Difficulty: 1</div>
+            </div>
+
+            <div class="timer-container">
+                <div class="timer-bar">
+                    <div id="timerFill" class="timer-fill"></div>
+                </div>
+                <div id="timeDisplay" class="time-display">5</div>
+            </div>
+
+            <div id="instructionText" class="instruction"></div>
+
+            <!-- Dynamically populated by minigames -->
+            <div id="gameArea" class="game-area"></div>
+        </div>
+
+        <!-- Results Screen -->
+        <div id="resultsScreen" class="screen">
+            <div id="resultText" class="result-text"></div>
+            <button id="nextBtn" class="btn">NEXT</button>
+        </div>
+
+        <!-- Game Over Screen -->
+        <div id="gameOverScreen" class="screen">
+            <h1>GAME OVER</h1>
+            <p id="finalScore"></p>
+            <button id="restartBtn" class="btn">TRY AGAIN</button>
+        </div>
+
+        <!-- Win Screen -->
+        <div id="winScreen" class="screen">
+            <h1>YOU WIN!</h1>
+            <p>All challenges complete!</p>
+            <button id="playAgainBtn" class="btn">PLAY AGAIN</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
