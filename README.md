@@ -1,7 +1,7 @@
-List of Minigames I want to stea- I mean follow tutorials for:
+List of Minigames we sto- I mean, followed tutorials for:
 
-1. Doodle Jump Platformer [90% done]
+1. Doodle Jump Platformer 
 2. Jump King Launcher
 3. Button Masher
-4. decipher the image [40% done]
+4. decipher the image
 5. maze
