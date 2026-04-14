@@ -884,8 +884,188 @@ class JumpKingGame extends Minigame {
     setupGame() {
         document.getElementById('instructionText').textContent = 'JUMP!';
 
-       
-}}
+        // Store original height and make game area bigger
+        const originalHeight = this.gameArea.style.height;
+        this.gameArea.style.height = '600px';
+
+        // Create canvas
+        const canvas = document.createElement('canvas');
+        canvas.width = this.gameArea.clientWidth;
+        canvas.height = this.gameArea.clientHeight;
+        this.gameArea.appendChild(canvas);
+        const ctx = canvas.getContext('2d');
+
+        // Game variables
+        const gravity = 0.6;
+        let camY = 0;
+        let gameActive = true;
+        const gameObj = this;
+
+        // Player object
+        const player = {
+            x: canvas.width / 2 - 10,
+            y: canvas.height - 100,
+            vx: 0,
+            vy: 0,
+            size: 20,
+            onGround: false,
+            charge: 0,
+            charging: false
+        };
+
+        // Create platforms
+        const platforms = [
+            { x: canvas.width / 2 - 50, y: canvas.height - 80, w: 100, h: 10 },
+            { x: 150, y: canvas.height - 50, w: 100, h: 10 },
+            { x: 50, y: canvas.height - 150, w: 100, h: 10 },
+            { x: 250, y: canvas.height - 250, w: 100, h: 10 },
+            { x: 100, y: canvas.height - 350, w: 100, h: 10 },
+            { x: 200, y: canvas.height - 450, w: 100, h: 10 }
+        ];
+
+        // Add more platforms based on difficulty for higher goal
+        for (let i = 0; i < this.difficulty * 2; i++) {
+            platforms.push({
+                x: Math.random() * (canvas.width - 100),
+                y: canvas.height - 550 - (i * 100),
+                w: 100,
+                h: 10
+            });
+        }
+
+        // Track keys pressed
+        const keys = {};
+        const handleKeyDown = (e) => {
+            keys[e.code] = true;
+        };
+
+        const handleKeyUp = (e) => {
+            keys[e.code] = false;
+        };
+
+        document.addEventListener('keydown', handleKeyDown);
+        document.addEventListener('keyup', handleKeyUp);
+
+        // Collision detection
+        function checkCollision(x, y, size, platform) {
+            return x < platform.x + platform.w &&
+                   x + size > platform.x &&
+                   y < platform.y + platform.h &&
+                   y + size > platform.y;
+        }
+
+        // Game loop
+        const gameLoop = setInterval(() => {
+            if (!gameActive) return;
+
+            // Apply gravity
+            player.vy += gravity;
+            player.x += player.vx;
+            player.y += player.vy;
+
+            player.onGround = false;
+
+            // Check platform collisions
+            for (let p of platforms) {
+                if (checkCollision(player.x, player.y, player.size, p)) {
+                    if (player.vy > 0) {
+                        player.y = p.y - player.size;
+                        player.vy = 0;
+                        player.onGround = true;
+                    }
+                }
+            }
+
+            // Wrap around sides
+            if (player.x + player.size < 0) {
+                player.x = canvas.width;
+            } else if (player.x > canvas.width) {
+                player.x = -player.size;
+            }
+
+            // Air control
+            if (!player.onGround) {
+                if (keys['KeyA']) player.vx = -2;
+                else if (keys['KeyD']) player.vx = 2;
+                else player.vx = 0;
+            } else {
+                player.vx = 0;
+            }
+
+            // Charging jump
+            if (player.onGround && keys['Space']) {
+                player.charging = true;
+                player.charge = Math.min(player.charge + 0.5, 15);
+            }
+
+            if (player.charging && !keys['Space']) {
+                player.vy = -player.charge;
+                player.charge = 0;
+                player.charging = false;
+                player.onGround = false;
+            }
+
+            // Update camera (smooth follow player upward)
+            const targetCamY = Math.max(0, player.y - canvas.height / 3);
+            camY = camY + (targetCamY - camY) * 0.1;
+
+            // Clear canvas
+            ctx.fillStyle = '#1e1e1e';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw with camera offset
+            ctx.save();
+            ctx.translate(0, -camY);
+
+            // Draw platforms
+            ctx.fillStyle = '#666666';
+            for (let p of platforms) {
+                ctx.fillRect(p.x, p.y, p.w, p.h);
+            }
+
+            // Draw player
+            ctx.fillStyle = '#c86464';
+            ctx.fillRect(player.x, player.y, player.size, player.size);
+
+            // Draw charge bar
+            if (player.onGround) {
+                ctx.fillStyle = '#00ff00';
+                ctx.fillRect(player.x, player.y - 10, player.charge * 2, 5);
+            }
+
+            ctx.restore();
+
+            // Check win condition (left top of screen)
+            if (player.y < -50) {
+                gameActive = false;
+                clearInterval(gameLoop);
+                document.removeEventListener('keydown', handleKeyDown);
+                document.removeEventListener('keyup', handleKeyUp);
+                gameObj.success();
+            }
+
+            // Fail if fall off bottom
+            if (player.y > canvas.height + 100) {
+                gameActive = false;
+                clearInterval(gameLoop);
+                document.removeEventListener('keydown', handleKeyDown);
+                document.removeEventListener('keyup', handleKeyUp);
+                gameObj.fail();
+            }
+        }, 30);
+
+        // Cleanup when game ends
+        const originalEndGame = this.endGame.bind(this);
+        this.endGame = () => {
+            gameActive = false;
+            clearInterval(gameLoop);
+            document.removeEventListener('keydown', handleKeyDown);
+            document.removeEventListener('keyup', handleKeyUp);
+            this.gameArea.style.height = originalHeight;
+            originalEndGame();
+        };
+    }
+}
 
 // ============================================
 // INITIALIZE GAME
